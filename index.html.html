@@ -4,29 +4,310 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Our Special Day</title>
-  <link rel="stylesheet" href="styles.css"> 
+  
+  <!-- Added Google Fonts for a cuter look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
+  
+  <style>
+    /* styles.css */
+    :root {
+      --primary-color: #ff9a9e;
+      --secondary-color: #fad0c4;
+      --accent-color: #ff6f61;
+      --white-color: #ffffff;
+      --dark-color: #333;
+      --error-color: #d32f2f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      /* Animated gradient background */
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a18cd1, #fbc2eb);
+      background-size: 400% 400%;
+      text-align: center;
+      padding: 20px;
+      color: var(--white-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden; /* Prevents scrollbars from animations */
+      animation: gradientShift 15s ease infinite;
+    }
+
+    h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: 3em; /* Larger, cuter font */
+      font-weight: 400;
+      color: var(--white-color);
+      text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+      font-family: 'Pacifico', cursive;
+      font-size: 2.5em;
+      font-weight: 400;
+      color: var(--accent-color);
+    }
+
+    p {
+      margin: 15px 0;
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
+
+    /* This is the "magic box" */
+    #container {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      margin-top: 50px;
+      width: 90%;
+      max-width: 500px;
+      /* Glowing shadow */
+      box-shadow: 0 0 25px rgba(255, 105, 180, 0.5), 0 0 40px rgba(255, 105, 180, 0.3);
+      /* Floating animation */
+      animation: float 6s ease-in-out infinite;
+      transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
+    }
+
+    input[type="date"], button {
+      padding: 15px 25px;
+      margin: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 50px; /* Cute pill shape */
+      outline: none;
+      width: calc(100% - 20px);
+      max-width: 300px;
+    }
+    
+    input[type="date"] {
+      font-family: 'Inter', sans-serif;
+      color: var(--dark-color);
+      cursor: text;
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: var(--white-color);
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.3s ease;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      animation-play-state: paused; /* Stop pulsing when hovering */
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #error {
+      color: var(--error-color);
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    /* The message container */
+    #messageContainer {
+      position: relative;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-top: 20px;
+      color: var(--dark-color);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      
+      /* Animation for the message fading in */
+      animation: fadeInMessage 1.5s ease-in-out forwards;
+      opacity: 0; /* Start hidden for animation */
+      transform: translateY(20px);
+    }
+    
+    /* Wrapper for floating hearts */
+    .hearts-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      border-radius: 20px;
+    }
+    
+    .heart {
+      position: absolute;
+      bottom: -20px;
+      font-size: 1.5rem;
+      opacity: 0;
+      animation: floatHeart 10s infinite;
+    }
+
+    /* Create multiple hearts with different delays/positions */
+    .heart:nth-child(1) { left: 10%; animation-delay: 0s; }
+    .heart:nth-child(2) { left: 30%; animation-delay: 1.5s; font-size: 1rem; }
+    .heart:nth-child(3) { left: 50%; animation-delay: 3s; }
+    .heart:nth-child(4) { left: 70%; animation-delay: 4.5s; font-size: 1.2rem; }
+    .heart:nth-child(5) { left: 90%; animation-delay: 6s; }
+    .heart:nth-child(6) { left: 20%; animation-delay: 7s; font-size: 1rem; }
+
+    /* === ANIMATION CLASSES === */
+
+    /* Class added to shake the box on error */
+    .shake {
+      animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    
+    /* Class added to animate the box out on success */
+    .success-open {
+      transform: scale(0.8) rotate(5deg);
+      opacity: 0;
+    }
+
+    /* === KEYFRAME ANIMATIONS === */
+    
+    /* Animated gradient */
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Magic box floating */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    /* Button pulsing */
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 111, 97, 0.3); }
+      50% { transform: scale(1.03); box-shadow: 0 0 20px rgba(255, 111, 97, 0.7); }
+      100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 111, 97, 0.3); }
+    }
+
+    /* Box shaking on error */
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-1deg); }
+      20%, 80% { transform: translate3d(2px, 0, 0) rotate(1deg); }
+      30%, 50%, 70% { transform: translate3d(-3px, 0, 0) rotate(-2deg); }
+      40%, 60% { transform: translate3d(3px, 0, 0) rotate(2deg); }
+    }
+    
+    /* Message container fading in */
+    @keyframes fadeInMessage {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Hearts floating up */
+    @keyframes floatHeart {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-1000%) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+  </style>
 </head>
 <body>
+
+  <!-- The "Magic Box" Container -->
   <div id="container">
-    <h1>Welcome, Pigi!</h1>
+    <h1>Welcome, ex</h1>
     <p>Enter the date we met to unlock the surprise:</p>
     <input type="date" id="dateInput">
-    <button id="submitButton">Unlock</button>
+    <button id="submitButton">Unlock 💖</button>
     <p id="error" class="hidden">Hmm, that's not the right date! Try again. 😊</p>
-    
-    <div id="messageContainer" class="hidden">
-      <h2>Happy 2-Year Anniversary!🥺🫂🫀 🎉</h2>
-      <p>I know you’re peacefully asleep right now (probably dreaming about me😋), but when you wake up and read this, I hope it puts the biggest, brightest smile on your face—because you deserve nothing less.🥹🫂🫀
-Can you believe it’s already been two whole years of “us”?💕🐰  Two years filled with laughter, little arguments, endless conversations, and so many memories I’ll cherish forever. You’ve made my world brighter, and every single day with you feels like a blessing.🥹🐰  
-Pigi, you’re my sunshine when the skies are gray, my partner in every silly adventure, and the reason my heart feels so full. You’ve shown me just how magical love can be, and sometimes I still can’t believe I get to call you mine.🧿🐰 💖
-Thank you for being you—for your kindness, your quirks, and for loving me the way you do. These two years are just the beginning of our beautiful forever, and I’m so excited to see everything the future has in store for us.💕🫀💌🫂🥹
-So, when you wake up, just know that someone loves you more than words could ever express. Thank you for being my Pigi, my best friend, and my everything.
-Yours, always,🥺🫂🫀
-Prantik 🐻❤️
-</p>
-    </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- The Hidden Message -->
+  <div id="messageContainer" class="hidden">
+    <!-- Floating hearts will be here -->
+    <div class="hearts-wrapper">
+      <div class="heart">💖</div>
+      <div class="heart">💕</div>
+      <div class="heart">❤️</div>
+      <div class="heart">🥰</div>
+      <div class="heart">💖</div>
+      <div class="heart">💓</div>
+    </div>
+    
+    <h2>Happy 2-Year Anniversary!🥺🫂🫀 🎉</h2>
+    <p>I know you’re peacefully asleep right now (probably dreaming about me😋), but when you wake up and read this, I hope it puts the biggest, brightest smile on your face—because you deserve nothing less.🥹🫂🫀<br><br>
+Can you believe it’s already been two whole years of “us”?💕🐰  Two years filled with laughter, little arguments, endless conversations, and so many memories I’ll cherish forever. You’ve made my world brighter, and every single day with you feels like a blessing.🥹🐰  <br><br>
+Pigi, you’re my sunshine when the skies are gray, my partner in every silly adventure, and the reason my heart feels so full. You’ve shown me just how magical love can be, and sometimes I still can’t believe I get to call you mine.🧿🐰 💖<br><br>
+Thank you for being you—for your kindness, your quirks, and for loving me the way you do. These two years are just the beginning of our beautiful forever, and I’m so excited to see everything the future has in store for us.💕🫀💌🫂🥹<br><br>
+So, when you wake up, just know that someone loves you more than words could ever express. Thank you for being my Pigi, my best friend, and my everything.<br><br>
+Yours, always,🥺🫂🫀<br>
+Prantik 🐻❤️
+</p>
+  </div>
+
+
+  <script>
+    // script.js
+    document.getElementById('submitButton').addEventListener('click', function () {
+      const inputDate = document.getElementById('dateInput').value;
+      const correctDate = '2023-01-27'; // Your special date
+      
+      const container = document.getElementById('container');
+      const error = document.getElementById('error');
+      const messageContainer = document.getElementById('messageContainer');
+
+      // Always remove shake to reset animation
+      container.classList.remove('shake');
+
+      if (inputDate === correctDate) {
+        // SUCCESS
+        error.classList.add('hidden');
+        // Add class to trigger success animation
+        container.classList.add('success-open');
+        
+        // Wait for animation to finish, then swap content
+        setTimeout(() => {
+          container.classList.add('hidden');
+          messageContainer.classList.remove('hidden');
+        }, 1000); // 1s animation duration
+
+      } else {
+        // FAILURE
+        error.classList.remove('hidden');
+        messageContainer.classList.add('hidden');
+        // Add class to trigger shake animation
+        container.classList.add('shake');
+        
+        // Optional: remove shake class after animation finishes
+        // so it can shake again on the next wrong guess
+        setTimeout(() => {
+          container.classList.remove('shake');
+        }, 600); // 0.6s animation duration
+      }
+    });
+  </script>
 </body>
 </html>

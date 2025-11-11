@@ -1,4 +1,3 @@
-// script.js
 document.getElementById('submitButton').addEventListener('click', function () {
   const inputDate = document.getElementById('dateInput').value;
   const correctDate = '2023-01-27'; // Replace with your special date (YYYY-MM-DD)
@@ -11,3 +10,4 @@ document.getElementById('submitButton').addEventListener('click', function () {
     document.getElementById('messageContainer').classList.add('hidden');
   }
 });
+

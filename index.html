@@ -3,381 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinity for Ariyana</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>For Ariyana</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Pinyon+Script&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&family=Sacramento&display=swap');
 
         :root {
-            --gold: #ffd700;
-            --white: #ffffff;
+            --bg: #fff5f5;
+            --pink: #ffb7b2;
+            --mint: #b5ead7;
+            --lilac: #c7ceea;
+            --peach: #ffdac1;
+            --text: #6d6875;
         }
 
         body {
             margin: 0;
-            background-color: #000;
             overflow: hidden;
-            font-family: 'Cinzel', serif;
+            background-color: var(--bg);
+            font-family: 'Quicksand', sans-serif;
+            color: var(--text);
             user-select: none;
         }
 
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* UI LAYER */
-        .ui {
+        /* PAGE CONTAINER */
+        .page {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 10;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            opacity: 0;
             pointer-events: none;
-            color: white;
-            text-align: center;
+            transition: opacity 0.5s ease;
         }
 
-        /* PHASE 1: THE TRIGGER */
-        #trigger-btn {
-            pointer-events: auto;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 20px 40px;
-            color: rgba(255, 255, 255, 0.7);
-            font-family: 'Cinzel', serif;
-            font-size: 1rem;
-            letter-spacing: 4px;
+        .page.active {
+            opacity: 1;
+            pointer-events: all;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Sacramento', cursive;
+            font-size: 4rem;
+            color: var(--text);
+            margin: 0;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        .instruction {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.9rem;
+            opacity: 0.5;
+            letter-spacing: 2px;
             text-transform: uppercase;
+        }
+
+        /* --- PAGE 1: BUBBLES --- */
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--lilac);
+            opacity: 0.6;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .bubble:hover { transform: scale(1.1); }
+
+        #enter-btn {
+            padding: 15px 40px;
+            background: var(--pink);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none; /* Hidden until bubbles popped */
+            box-shadow: 0 5px 15px rgba(255, 183, 178, 0.4);
+        }
+
+        /* --- PAGE 2: FLOWERS --- */
+        .garden-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .flower {
+            width: 60px;
+            height: 60px;
+            background-color: #e2e2e2; /* Dead color */
+            border-radius: 50%;
             cursor: pointer;
             transition: all 0.5s ease;
             position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(5px);
         }
-
-        #trigger-btn::before {
+        /* Petals using pseudo elements */
+        .flower::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            transform: scale(0.5);
+            opacity: 0.5;
+        }
+        .flower.bloomed {
+            background-color: var(--peach);
+            transform: scale(1.2) rotate(45deg);
+            box-shadow: 0 0 20px var(--peach);
         }
 
-        #trigger-btn:hover::before {
-            left: 100%;
+        /* --- PAGE 3: DRAG KEY --- */
+        .lock-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
         }
-
-        #trigger-btn:hover {
-            border-color: white;
-            color: white;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-            letter-spacing: 6px;
+        .target-heart {
+            width: 100px;
+            height: 100px;
+            background: var(--pink);
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            clip-path: path("M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402m5.726-20.583c-2.203 0-4.446 1.042-5.726 3.238-1.285-2.206-3.522-3.248-5.719-3.248-3.183 0-6.281 2.187-6.281 6.191 0 4.661 5.57 9.429 12 15.809 6.43-6.38 12-11.148 12-15.809 0-4.011-3.095-6.181-6.274-6.181");
+            transform: scale(4) translate(-12px, -12px); /* Adjusting SVG path size */
+            opacity: 0.3;
         }
-
-        /* PHASE 2: THE MESSAGE */
-        .final-message {
-            opacity: 0;
-            transform: translateY(30px);
-            max-width: 800px;
-            padding: 20px;
-        }
-
-        .final-message h1 {
-            font-family: 'Pinyon Script', cursive;
-            font-size: 5rem;
-            color: var(--gold);
-            margin: 0;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
-            line-height: 1;
-        }
-
-        .final-message p {
-            font-size: 1.2rem;
-            line-height: 1.8;
-            margin-top: 2rem;
-            font-weight: 300;
-            letter-spacing: 1px;
-            mix-blend-mode: overlay;
-        }
-
-        .overlay-flash {
-            position: fixed;
-            top: 0;
+        
+        .draggable-key {
+            width: 50px;
+            height: 50px;
+            background: var(--text);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 10px;
+        }
+
+        /* --- PAGE 4: LETTER --- */
+        .letter-paper {
             background: white;
-            z-index: 100;
+            padding: 40px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transform: translateY(20px);
             opacity: 0;
-            pointer-events: none;
+            line-height: 2;
+        }
+        
+        /* NAVIGATION DOTS */
+        .nav-dots {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: 0.3s;
+        }
+        .dot.active {
+            background: var(--pink);
+            transform: scale(1.3);
         }
 
     </style>
 </head>
 <body>
 
-    <div id="canvas-container"></div>
-    <div class="overlay-flash"></div>
+    <div class="nav-dots">
+        <div class="dot active" id="dot1"></div>
+        <div class="dot" id="dot2"></div>
+        <div class="dot" id="dot3"></div>
+        <div class="dot" id="dot4"></div>
+    </div>
 
-    <div class="ui">
-        <div id="start-screen">
-            <h2 style="font-size: 0.8rem; letter-spacing: 0.5em; opacity: 0.6; margin-bottom: 30px;">CHAOS DETECTED</h2>
-            <button id="trigger-btn">Harmonize Universe</button>
+    <div class="page active" id="page1">
+        <h1>Hey Ariyana</h1>
+        <p>There are obstacles in the way...</p>
+        <div class="instruction">Pop the bubbles to clear the path</div>
+        
+        <button id="enter-btn" onclick="nextPage(2)">Enter Garden</button>
+    </div>
+
+    <div class="page" id="page2">
+        <h1>Make it Bloom</h1>
+        <div class="instruction">Hover over every flower</div>
+        
+        <div class="garden-grid" id="garden">
+            </div>
+    </div>
+
+    <div class="page" id="page3">
+        <h1>Unlock My Heart</h1>
+        <div class="instruction">Drag the key to the center</div>
+        
+        <div class="lock-container">
+            <svg class="target-heart" viewBox="0 0 24 24" fill="var(--pink)">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            
+            <div class="draggable-key" id="key">KEY</div>
         </div>
+    </div>
 
-        <div class="final-message" id="end-screen">
-            <h1>Ariyana</h1>
-            <p id="typed-text"></p>
+    <div class="page" id="page4">
+        <div class="letter-paper" id="letter">
+            <h1 style="font-size: 2rem; margin-bottom: 20px; color: var(--pink);">My Dearest Ariyana,</h1>
+            <p id="typewriter-text"></p>
+            <p style="text-align: right; margin-top: 30px; font-weight: bold;">- Prantik (Cutiee)</p>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        // This is the poetry that appears after the universe explodes
-        const poem = "I searched through infinite timelines and a million realities.\n\nIn every single one of them, the stars only aligned when I found you.\n\nThis is not just a website.\nIt is a promise.\n\nForever.";
+        gsap.registerPlugin(Draggable);
 
-        // --- THREE.JS SETUP ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        // --- GLOBAL NAV ---
+        function nextPage(num) {
+            // Fade out current
+            gsap.to(".page.active", { opacity: 0, duration: 0.5, onComplete: () => {
+                document.querySelector(".page.active").classList.remove("active");
+                // Fade in next
+                const next = document.getElementById(`page${num}`);
+                next.classList.add("active");
+                gsap.to(next, { opacity: 1, duration: 0.5 });
+                
+                // Update dots
+                document.querySelectorAll(".dot").forEach(d => d.classList.remove("active"));
+                document.getElementById(`dot${num}`).classList.add("active");
 
-        // --- PARTICLES (THE GALAXY) ---
-        const count = 15000; // 15k stars
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(count * 3);
-        const colors = new Float32Array(count * 3);
-        const originalPositions = new Float32Array(count * 3);
-
-        const color1 = new THREE.Color('#ff0055'); // Pink
-        const color2 = new THREE.Color('#00ccff'); // Blue
-        const color3 = new THREE.Color('#ffffff'); // White
-
-        for(let i = 0; i < count; i++) {
-            const i3 = i * 3;
-            // Create a spiral galaxy shape
-            const radius = Math.random() * 10 + Math.random() * 10;
-            const spinAngle = radius * 0.5;
-            const branchAngle = (i % 3) * ((Math.PI * 2) / 3);
-            
-            const x = Math.cos(branchAngle + spinAngle) * radius + (Math.random() - 0.5) * 2;
-            const y = (Math.random() - 0.5) * 4; // Flat galaxy
-            const z = Math.sin(branchAngle + spinAngle) * radius + (Math.random() - 0.5) * 2;
-
-            positions[i3] = x;
-            positions[i3+1] = y;
-            positions[i3+2] = z;
-
-            // Save original for "explosion" calculation
-            originalPositions[i3] = x;
-            originalPositions[i3+1] = y;
-            originalPositions[i3+2] = z;
-
-            // Colors based on radius
-            const mixedColor = color1.clone();
-            if (i < count * 0.33) {
-                mixedColor.lerp(color2, Math.random());
-            } else {
-                mixedColor.lerp(color3, Math.random());
-            }
-            
-            colors[i3] = mixedColor.r;
-            colors[i3+1] = mixedColor.g;
-            colors[i3+2] = mixedColor.b;
+                // Trigger specific page logic
+                if(num === 2) initPage2();
+                if(num === 3) initPage3();
+                if(num === 4) initPage4();
+            }});
         }
 
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        // --- PAGE 1 LOGIC (BUBBLES) ---
+        const page1 = document.getElementById('page1');
+        let bubblesPopped = 0;
+        const totalBubbles = 10;
 
-        // Use a sprite for the particle to make it glow
-        const loader = new THREE.TextureLoader();
-        // A simple circle texture created in code to avoid external image dependencies
-        const canvas = document.createElement('canvas');
-        canvas.width = 32; canvas.height = 32;
-        const context = canvas.getContext('2d');
-        const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
-        gradient.addColorStop(0, 'rgba(255,255,255,1)');
-        gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-        gradient.addColorStop(0.5, 'rgba(255,255,255,0.2)');
-        gradient.addColorStop(1, 'rgba(0,0,0,0)');
-        context.fillStyle = gradient;
-        context.fillRect(0,0,32,32);
-        const texture = new THREE.CanvasTexture(canvas);
+        for(let i=0; i<totalBubbles; i++) {
+            const b = document.createElement('div');
+            b.classList.add('bubble');
+            const size = Math.random() * 60 + 40;
+            b.style.width = size + 'px';
+            b.style.height = size + 'px';
+            b.style.left = Math.random() * 80 + 10 + '%';
+            b.style.top = Math.random() * 60 + 20 + '%';
+            b.style.background = ['#ffb7b2', '#c7ceea', '#b5ead7', '#ffdac1'][Math.floor(Math.random()*4)];
+            
+            // Animation: Floating
+            gsap.to(b, {
+                y: -20,
+                duration: Math.random() * 2 + 1,
+                yoyo: true,
+                repeat: -1,
+                ease: "sine.inOut"
+            });
 
-        const material = new THREE.PointsMaterial({
-            size: 0.3,
-            sizeAttenuation: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-            vertexColors: true,
-            map: texture
-        });
-
-        const particles = new THREE.Points(geometry, material);
-        scene.add(particles);
-
-        camera.position.z = 25;
-        camera.position.y = 10;
-        camera.lookAt(0,0,0);
-
-        // --- ANIMATION STATES ---
-        let time = 0;
-        let speed = 0.05;
-        let state = 'idle'; // idle, collapsing, exploding, eternal
-
-        // Mouse interaction
-        let mouseX = 0;
-        let mouseY = 0;
-        document.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-        });
-
-        // --- THE LOOP ---
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.01;
-
-            const positions = particles.geometry.attributes.position.array;
-
-            if (state === 'idle') {
-                // Gentle rotation
-                particles.rotation.y = time * 0.1;
-                particles.rotation.z = Math.sin(time * 0.2) * 0.1;
-                
-                // Mouse parallax
-                camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
-                camera.position.y += (mouseY * 5 + 10 - camera.position.y) * 0.05;
-                camera.lookAt(0,0,0);
-            } 
-            else if (state === 'collapsing') {
-                // Suck everything into the center
-                particles.rotation.y += 0.2; // Spin fast
-                for(let i = 0; i < count; i++) {
-                    const i3 = i * 3;
-                    positions[i3] *= 0.95; // Shrink x
-                    positions[i3+1] *= 0.95; // Shrink y
-                    positions[i3+2] *= 0.95; // Shrink z
+            b.onclick = () => {
+                gsap.to(b, { scale: 1.5, opacity: 0, duration: 0.2, onComplete: () => b.remove() });
+                bubblesPopped++;
+                if(bubblesPopped === totalBubbles) {
+                    gsap.fromTo("#enter-btn", {scale: 0}, {display: "block", scale: 1, ease: "elastic.out(1, 0.3)"});
                 }
-                particles.geometry.attributes.position.needsUpdate = true;
-                
-                // Zoom camera in
-                camera.position.z = THREE.MathUtils.lerp(camera.position.z, 5, 0.05);
-            } 
-            else if (state === 'eternal') {
-                // Heartbeat Pulse
-                const scale = 1 + Math.sin(time * 2) * 0.05; // Heartbeat rhythm
-                particles.scale.set(scale, scale, scale);
-                particles.rotation.y += 0.002;
-                
-                // Slow drift
-                for(let i = 0; i < count; i++) {
-                    const i3 = i * 3;
-                    // Add subtle wave motion
-                    positions[i3+1] = originalPositions[i3+1] + Math.sin(time + positions[i3]) * 0.2;
-                }
-                particles.geometry.attributes.position.needsUpdate = true;
-            }
-
-            renderer.render(scene, camera);
+            };
+            page1.appendChild(b);
         }
 
-        animate();
+        // --- PAGE 2 LOGIC (FLOWERS) ---
+        function initPage2() {
+            const garden = document.getElementById('garden');
+            let bloomedCount = 0;
+            const totalFlowers = 9;
 
-        // --- LOGIC: THE BIG BANG ---
-        const btn = document.getElementById('trigger-btn');
-        const startScreen = document.getElementById('start-screen');
-        const endScreen = document.getElementById('end-screen');
-        const flash = document.querySelector('.overlay-flash');
-        const typedText = document.getElementById('typed-text');
-
-        btn.addEventListener('click', () => {
-            // 1. Start Collapse
-            state = 'collapsing';
-            
-            // Fade out UI
-            gsap.to(startScreen, { opacity: 0, duration: 1, pointerEvents: 'none' });
-
-            // 2. Wait for singularity, then BANG
-            setTimeout(() => {
-                // FLASH WHITE
-                gsap.to(flash, { opacity: 1, duration: 0.1, onComplete: () => {
-                    // RESET UNIVERSE TO ETERNAL STATE
-                    state = 'eternal';
-                    
-                    // Instant expansion logic
-                    const positions = particles.geometry.attributes.position.array;
-                    for(let i = 0; i < count; i++) {
-                        const i3 = i * 3;
-                        // Explode outward to a sphere shape instead of disk
-                        const theta = Math.random() * Math.PI * 2;
-                        const phi = Math.acos(2 * Math.random() - 1);
-                        const r = 15 + Math.random() * 10;
-
-                        positions[i3] = r * Math.sin(phi) * Math.cos(theta);
-                        positions[i3+1] = r * Math.sin(phi) * Math.sin(theta);
-                        positions[i3+2] = r * Math.cos(phi);
-                        
-                        // Update original for the heartbeat reference
-                        originalPositions[i3] = positions[i3];
-                        originalPositions[i3+1] = positions[i3+1];
-                        originalPositions[i3+2] = positions[i3+2];
+            for(let i=0; i<totalFlowers; i++) {
+                const f = document.createElement('div');
+                f.classList.add('flower');
+                
+                f.addEventListener('mouseenter', () => {
+                    if(!f.classList.contains('bloomed')) {
+                        f.classList.add('bloomed');
+                        bloomedCount++;
+                        if(bloomedCount === totalFlowers) {
+                            setTimeout(() => nextPage(3), 1000); // Auto advance
+                        }
                     }
-                    particles.geometry.attributes.position.needsUpdate = true;
+                });
+                garden.appendChild(f);
+            }
+        }
 
-                    // Camera adjustment
-                    camera.position.set(0, 0, 40);
+        // --- PAGE 3 LOGIC (DRAG KEY) ---
+        function initPage3() {
+            Draggable.create("#key", {
+                type: "x,y",
+                bounds: ".lock-container",
+                onDragEnd: function() {
+                    // Check if close to center (approx logic)
+                    // The container is 300x300. Center is 150,150.
+                    // The drag uses transform translate.
                     
-                    // Fade flash out
-                    gsap.to(flash, { opacity: 0, duration: 2 });
+                    // Simple hit detection:
+                    if (this.hitTest(".target-heart", "50%")) {
+                        gsap.to(this.target, { duration: 0.5, opacity: 0, scale: 2 });
+                        gsap.to(".target-heart", { scale: 10, duration: 1, color: "#fff5f5", onComplete: () => nextPage(4) });
+                    } else {
+                        // Snap back if failed
+                        gsap.to(this.target, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+                    }
+                }
+            });
+        }
 
-                    // Reveal Text
-                    setTimeout(revealMessage, 1000);
-                }});
-            }, 2500); // 2.5 seconds of collapsing
-        });
-
-        function revealMessage() {
-            gsap.to(endScreen, { opacity: 1, y: 0, duration: 2, ease: "power2.out" });
+        // --- PAGE 4 LOGIC (LETTER) ---
+        function initPage4() {
+            gsap.to("#letter", { y: 0, opacity: 1, duration: 1, delay: 0.5 });
             
-            // Typewriter effect
+            const msg = "Every page of my life is better because you are in it.\n\nFrom the chaos to the calm, and from the playful moments to the serious ones...\n\nYou are my favorite chapter.\n\nI love you.";
+            const target = document.getElementById('typewriter-text');
             let i = 0;
-            const textContent = poem;
             
             function type() {
-                if (i < textContent.length) {
-                    let char = textContent.charAt(i);
-                    if (char === "\n") char = "<br>";
-                    typedText.innerHTML += char;
+                if (i < msg.length) {
+                    target.innerHTML += (msg.charAt(i) === "\n") ? "<br>" : msg.charAt(i);
                     i++;
                     setTimeout(type, 50);
                 }
             }
-            type();
+            setTimeout(type, 1500);
         }
 
-        // Resize handler
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
